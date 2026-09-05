@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Software Installation Tracker</title>
+
+  <style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #030108;
+    color: #f5f3ff;
+}
+
+.container {
+    width: 92%;
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 30px;
+    background: #080414;
+    border: 1px solid #24104f;
+    border-radius: 16px;
+    box-shadow: 0 0 30px rgba(100, 0, 255, 0.15);
+}
+
+h1 {
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 30px;
+    text-shadow: 0 0 15px #7c3cff;
+}
+
+input,
+select,
+button {
+    padding: 12px;
+    margin: 5px;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+input,
+select {
+    background: #05020b;
+    color: #ffffff;
+    border: 1px solid #3b176f;
+}
+
+input::placeholder {
+    color: #8b829e;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #8b3dff;
+    box-shadow: 0 0 10px rgba(139, 61, 255, 0.4);
+}
+
+input {
+    width: 20%;
+}
+
+select {
+    width: 20%;
+}
+
+button {
+    background: linear-gradient(135deg, #6d28d9, #a21caf);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    box-shadow: 0 0 15px rgba(139, 61, 255, 0.6);
+    transform: translateY(-1px);
+}
+
+#search {
+    width: 98%;
+    margin-top: 20px;
+    background: #05020b;
+    color: white;
+    border: 1px solid #3b176f;
+}
+
+table {
+    width: 100%;
+    margin-top: 25px;
+    border-collapse: collapse;
+    background: #05020b;
+    border: 1px solid #25104d;
+}
+
+th {
+    background: linear-gradient(90deg, #24085c, #3b0875);
+    color: white;
+    padding: 14px;
+}
+
+td {
+    padding: 13px;
+    text-align: center;
+    border-bottom: 1px solid #1d1235;
+}
+
+tr:hover {
+    background: #0d061a;
+}
+
+.delete {
+    background: #dc1745;
+    padding: 8px 14px;
+}
+
+.delete:hover {
+    background: #ff174f;
+    box-shadow: 0 0 12px rgba(255, 23, 79, 0.5);
+}
+
+@media (max-width: 700px) {
+    input,
+    select,
+    button {
+        width: 100%;
+        margin: 5px 0;
+    }
+
+    .container {
+        width: 95%;
+        padding: 20px;
+    }
+
+    table {
+        font-size: 13px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Software Installation Tracker</h1>
+
+    <input type="text" id="computer" placeholder="Computer ID">
+    <input type="text" id="employee" placeholder="Employee Name">
+    <input type="text" id="software" placeholder="Software Name">
+    <input type="text" id="version" placeholder="Version">
+    <select id="status">
+    <option value="Updated">Updated</option>
+    <option value="Update Required">Update Required</option>
+</select>
+
+    <button onclick="addSoftware()">Add Software</button>
+
+    <input
+        type="text"
+        id="search"
+        placeholder="Search software..."
+        onkeyup="searchSoftware()"
+    >
+
+    <table>
+        <thead>
+            <tr>
+                <th>Computer ID</th>
+                <th>Employee</th>
+                <th>Software</th>
+                <th>Version</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="softwareTable"></tbody>
+    </table>
+
+</div>
+
+<script>
+
+let softwareList = JSON.parse(localStorage.getItem("softwareList")) || [];
+
+function addSoftware() {
+
+    let computer = document.getElementById("computer").value;
+    let employee = document.getElementById("employee").value;
+    let software = document.getElementById("software").value;
+    let version = document.getElementById("version").value;
+    let status = document.getElementById("status").value;
+
+    if (!computer || !employee || !software || !version) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    softwareList.push({
+        computer: computer,
+        employee: employee,
+        software: software,
+        version: version,
+        status: status
+    });
+
+    localStorage.setItem("softwareList", JSON.stringify(softwareList));
+
+    displaySoftware();
+
+    document.getElementById("computer").value = "";
+    document.getElementById("employee").value = "";
+    document.getElementById("software").value = "";
+    document.getElementById("version").value = "";
+}
+
+function displaySoftware(list = softwareList) {
+
+    let table = document.getElementById("softwareTable");
+
+    table.innerHTML = "";
+
+    list.forEach((item) => {
+
+        table.innerHTML += `
+            <tr>
+                <td>${item.computer}</td>
+                <td>${item.employee}</td>
+                <td>${item.software}</td>
+                <td>${item.version}</td>
+                <td>${item.status || "Not Set"}</td>
+
+                <td>
+                    <button class="delete"
+                    onclick="deleteSoftware('${item.computer}')">
+                    Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function deleteSoftware(computer) {
+
+    softwareList = softwareList.filter(
+        item => item.computer !== computer
+    );
+
+    localStorage.setItem(
+        "softwareList",
+        JSON.stringify(softwareList)
+    );
+
+    displaySoftware();
+}
+
+function searchSoftware() {
+
+    let search = document.getElementById("search")
+        .value.toLowerCase();
+
+    let result = softwareList.filter(item =>
+        item.software.toLowerCase().includes(search)
+    );
+
+    displaySoftware(result);
+}
+
+displaySoftware();
+
+</script>
+
+</body>
+</html>
